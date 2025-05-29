@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # API Gateway
+  api-gateway:
+    build:
+    ports:
+      - "3000:3000"
+    volumes:
+      -./API-Gateway://developer/nodejs/api-Gateway
+      - api-gateway-node-modules:/developer/nodejs/api-gateway/node_modules 
+
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - flight-service
+      - booking-service
+      - notification-service
+    networks:
+      - airplane-network
+
+  # Flight Service
+  flight-service:
+    build:
+      context: ./Flight_Service
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    volumes:
+      -./Flight_Service://developer/nodejs/flight-service
+      - flight-service-node-modules:/developer/nodejs/api-gateway/node_modules 
+
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=mongodb
+      - DB_PORT=27017
+      - DB_NAME=flight_db
+    depends_on:
+      - mongodb
+    networks:
+      - airplane-network
+
+  # Booking Service
+  booking-service:
+    build:
+      context: ./Flight_booking_Services
+      dockerfile: Dockerfile
+    ports:
+      - "3004:3004"
+    volumes:
+      -./Booking-service://developer/nodejs/booking-service
+      - booking-service-node-modules:/developer/nodejs/booking-service/node_modules 
+
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=mongodb
+      - DB_PORT=27017
+      - DB_NAME=booking_db
+    depends_on:
+      - mongodb
+    networks:
+      - airplane-network
+
+  # Notification Service
+  notification-service:
+    build:
+      context: ./Noti-Service
+      dockerfile: Dockerfile
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=development
+    networks:
+      - airplane-network
+
+  # MongoDB
